@@ -143,7 +143,7 @@ namespace Cars
         }
     }
 
-    public class Car
+    public class Car: ICar
     {
         public string Name { get; set; } // for test
         public CarType CarType { get; set; } 
@@ -171,11 +171,16 @@ namespace Cars
             {
                 float calc = distance / MaxSpeed * 60;
 
-                string result = TimeSpan.FromMinutes(calc).ToString();
-
-                return result;
+                return TimeSpan.FromMinutes(calc).ToString();
             }
         }
+    }
+
+    public interface ICar
+    {
+        float CalcDistanceByFuel();
+        float CalcMaxDistanceByFuel();
+        string CalcTimeCar(float distance);
     }
 
     public enum CarType
