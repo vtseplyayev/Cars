@@ -15,7 +15,7 @@ namespace Cars
                 MaxFuelCapacity = 50,
                 CurrentFuelCapacity = 30,
                 PassengerMax = 4,
-                PassengerCount = 0
+                PassengerCount = 1
             };
 
             car.PowerReserve = car.CalcPowerReserve();
@@ -25,8 +25,15 @@ namespace Cars
             Console.WriteLine($"При текущем количестве топлива {car.CurrentFuelCapacity}л. при расходе {car.FuelRate}л./100км. может проехать: {car.CalcDistanceByFuel()}км.");
             Console.WriteLine($"С пассажиром/ами={car.PassengerCount} может проехать расстояние={car.PowerReserve}");
 
-            int carDistance = 90;
-            Console.WriteLine($"Авто проедет дистанцию {carDistance}км. со скорость {car.MaxSpeed}км/ч при текущем запасе хода {car.PowerReserve}км за {car.CalcTimeCar(carDistance)} ");
+            int carDistance = 100;
+
+            Console.WriteLine($"Для того чтобы проехать дистанцию {carDistance}км. с дополнительными пассажиром/ами {car.PassengerCount}, необходимо {car.CalcFuelByDistance(carDistance)}л. топлива ");
+
+            if (car.CalcTimeCar(carDistance) != "0")
+                Console.WriteLine($"Авто проедет дистанцию {carDistance}км. со скорость {car.MaxSpeed}км/ч при текущем запасе хода {car.PowerReserve}км за {car.CalcTimeCar(carDistance)} ");
+            else
+                Console.WriteLine($"Авто не проедет дистанцию {carDistance}км. при текущем запасе хода {car.PowerReserve}км.");
+
             Console.WriteLine();
 
             CargoCar track = new CargoCar()
@@ -38,7 +45,7 @@ namespace Cars
                 MaxFuelCapacity = 200,
                 CurrentFuelCapacity = 50,
                 MaxCargoWeight = 2000,
-                CurrentCargoWeight = 201
+                CurrentCargoWeight = 200
             };
 
             track.PowerReserve = track.CalcPowerReserve();
@@ -46,10 +53,17 @@ namespace Cars
             Console.WriteLine($"Авто {track.Name}");
             Console.WriteLine($"При максимальном количестве топлива {track.MaxFuelCapacity}л. при расходе {track.FuelRate}л./100км. может проехать: {track.CalcMaxDistanceByFuel()}км.");
             Console.WriteLine($"При текущем количестве топлива {track.CurrentFuelCapacity}л. при расходе {track.FuelRate}л./100км. может проехать: {track.CalcDistanceByFuel()}км.");
-            Console.WriteLine($"С грузом={track.CurrentCargoWeight} может проехать расстояние={track.PowerReserve}");
+            Console.WriteLine($"С грузом={track.CurrentCargoWeight}кг. может проехать расстояние={track.PowerReserve}");
 
-            int trackDistance = 90;
-            Console.WriteLine($"Авто проедет дистанцию {trackDistance}км. со скорость {track.MaxSpeed}км/ч при текущем запасе хода {track.PowerReserve}км за {track.CalcTimeCar(carDistance)} ");
+            int trackDistance = 100;
+
+            Console.WriteLine($"Для того чтобы проехать дистанцию {trackDistance}км. с дополнительными весом {track.CurrentCargoWeight}, необходимо {track.CalcFuelByDistance(trackDistance)}л. топлива ");
+
+            if (track.CalcTimeCar(trackDistance) != "0")
+                Console.WriteLine($"Авто проедет дистанцию {trackDistance}км. со скорость {track.MaxSpeed}км/ч при текущем запасе хода {track.PowerReserve}км за {track.CalcTimeCar(trackDistance)} ");
+            else
+                Console.WriteLine($"Авто не проедет дистанцию {trackDistance}км. при текущем запасе хода {track.PowerReserve}км");
+
             Console.WriteLine();
         }
     }
@@ -87,6 +101,15 @@ namespace Cars
                 return CalcDistanceByFuel();
             }
         }
+
+        public float CalcFuelByDistance(float distance)
+        {
+            var passengerPercent = 100 + PassengerCount * 6;
+
+            var fuelCorrect = FuelRate * passengerPercent / 100;
+
+            return distance / 100 * fuelCorrect;
+        }
     }
 
     public class SportCar : Car
@@ -113,7 +136,7 @@ namespace Cars
                 currentCargoWeight = weigth;
         }
 
-        public float CalcPowerReserve()
+        private int CalcWeightIndex()
         {
             int count = 1;
             var tempCargoWeigth = currentCargoWeight;
@@ -127,26 +150,41 @@ namespace Cars
 
                 } while (tempCargoWeigth > 200);
             }
-
             else if (tempCargoWeigth == 0)
                 count = 0;
+
+            return count;
+        }
+
+        public float CalcFuelByDistance(float distance)
+        {
+
+            var weigthPercent = 100 + CalcWeightIndex() * 4;
+            var fuelCorrect = FuelRate * weigthPercent / 100;
+
+            return distance / 100 * fuelCorrect;
+        }
+
+        public float CalcPowerReserve()
+        {
+            int count = CalcWeightIndex();
 
             if (count >= 1)
             {
                 var weigthPercent = 100 - count * 4;
-
                 return (weigthPercent * CalcDistanceByFuel() / 100);
-            } else
+            }
+            else
             {
                 return CalcDistanceByFuel();
             }
         }
     }
 
-    public class Car: ICar
+    public class Car : ICar
     {
         public string Name { get; set; } // for test
-        public CarType CarType { get; set; } 
+        public CarType CarType { get; set; }
         public float MaxSpeed { get; set; } // km/h
         public float FuelRate { get; set; } // l/100km
         public float MaxFuelCapacity { get; set; } // l
