@@ -6,8 +6,8 @@ namespace Cars
 {
     public interface ICar
     {
-        public float CalcDistanceByFuel();
-        public float CalcMaxDistanceByFuel();
-        public string CalcTimeCar(float distance);
+        float CalcDistanceByFuel();
+        float CalcMaxDistanceByFuel();
+        string CalcTimeCar(float distance);
     }
 }
